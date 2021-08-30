@@ -15,6 +15,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -32,7 +34,7 @@ public class RequestInvokeServiceImpl implements IRequestInvokeService {
     private HttpMessageUtil httpMessageUtil = new HttpMessageUtil();
 
     @Override
-    public SoapResponse soapInvoke(SoapRequestParam requestParam) {
+    public SoapResponse soapInvoke(SoapRequestParam requestParam) throws DocumentException {
 
         if (StringUtils.isEmpty(requestParam.getInterfaceCode())) {
             throw new CommonException("request.execute.request_code_null", ExecuteConstants.UniqueFieldName.REQUEST_UNIQUE);
@@ -41,13 +43,54 @@ public class RequestInvokeServiceImpl implements IRequestInvokeService {
         //获取接口注册信息
         RequestCacheEntity requestCacheEntity = requestInfoService.getRequestInfo(requestParam.getInterfaceCode());
 
+        List<String> dataList = new ArrayList<>();
         /**
          * 如果目标接口的接口类型是rest,则需要将xml报文转换成rest接口能接收的json格式
          */
         if (ExecuteConstants.RequestType.REST.equals(requestCacheEntity.getTargetRequestType())) {
+            /**
+             * 获取rest请求的参数
+             */
+            Map<String, Object> restParamMap = httpMessageUtil.getDataForRest(requestParam.payload);
 
+            /**
+             * 执行rest请求
+             */
+            ResponseEntity restResponse = executeRequestService.executeRestRequest(requestCacheEntity.getTargetRequestUrl(),
+                    requestCacheEntity.getTargetRequestMethod(),
+                    (Map<String, Object>) restParamMap.get(ExecuteConstants.HttpParamType.REQUEST_PARAM),
+                    restParamMap.get(ExecuteConstants.HttpParamType.REQUEST_BODY),
+                    (Map<String, Object>) restParamMap.get(ExecuteConstants.HttpParamType.PATH_VARIABLE),
+                    (Map<String, Object>) restParamMap.get(ExecuteConstants.HttpParamType.REQUEST_HEADER));
+
+            /**
+             * 提取返回数据
+             */
+            dataList = httpMessageUtil.getDataFromRestResponse(restResponse.getBody(),
+                    requestCacheEntity.getResponseTagName());
+
+
+        } else {
+            /**
+             * 执行soap请求
+             */
+            String response = executeRequestService.executeSoapRequest(requestCacheEntity.getTargetRequestUrl(),
+                    "",
+                    requestCacheEntity.getSoapAction(),
+                    requestCacheEntity.getSoapVersion(),
+                    requestCacheEntity.getDefaultRequestHeaders());
+
+            /**
+             * 提取soap报文, 并组装返回结果
+             */
+            dataList = httpMessageUtil.getDataFromSoapResponse(response, requestCacheEntity.getResponseTagName());
         }
-        return null;
+
+        SoapResponse soapResponse = new SoapResponse();
+        soapResponse.payload = dataList;
+        soapResponse.setStatusCode("S");
+
+        return soapResponse;
     }
 
     @Override
@@ -70,6 +113,9 @@ public class RequestInvokeServiceImpl implements IRequestInvokeService {
          * 并配合设置的参数模板, 拼接出完整的soap请求报文格式
          */
         if (ExecuteConstants.RequestType.SOAP.equals(requestCacheEntity.getTargetRequestType())) {
+            /**
+             * 构建soap请求参数报文
+             */
             String soapParam = httpMessageUtil.buildSoapRequestParam(requestCacheEntity.getSoapTemplate(),
                     requestCacheEntity.getParamNodeName(),
                     requestCacheEntity.getDataTagName(),
@@ -77,30 +123,31 @@ public class RequestInvokeServiceImpl implements IRequestInvokeService {
             /**
              * 执行soap请求
              */
-            String soapReponse = executeRequestService.executeSoapRequest(requestCacheEntity.getTargetRequestUrl(),
+            String soapResponse = executeRequestService.executeSoapRequest(requestCacheEntity.getTargetRequestUrl(),
                     soapParam,
                     requestCacheEntity.getSoapAction(),
                     requestCacheEntity.getSoapVersion(),
                     requestCacheEntity.getDefaultRequestHeaders());
 
             /**
-             * 解析获取数据报文
+             * 解析获取数据报文:
+             * 提取节点数据, 转换成map进行返回
              */
+            Object responseData = httpMessageUtil.extractDataFromXml(soapResponse, requestCacheEntity.getResponseTagName());
+
+            return ResponseEntity.ok(responseData);
         }
 
-        return null;
-    }
+        /**
+         * 执行rest请求
+         */
+        ResponseEntity restResponse = executeRequestService.executeRestRequest(requestCacheEntity.getTargetRequestUrl(),
+                requestCacheEntity.getTargetRequestMethod(),
+                requestParams,
+                requestBody,
+                pathParams,
+                requestHeader);
 
-    /**
-     * 构建SOAP请求参数
-     *
-     * @param soapTemplate soap参数模板
-     * @param requestBody
-     * @return
-     */
-    private String buildSoapRequestParam(String soapTemplate,
-                                         Object requestBody) {
-
-        return null;
+        return restResponse;
     }
 }

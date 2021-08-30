@@ -52,4 +52,18 @@ public class ExecuteConstants {
     public interface UniqueFieldName {
         String REQUEST_UNIQUE = "interfaceCode";
     }
+
+    /**
+     * 请求参数分类名称
+     */
+    public interface HttpParamType {
+
+        String REQUEST_PARAM = "requestParam";
+
+        String PATH_VARIABLE = "pathVariable";
+
+        String REQUEST_BODY = "requestBody";
+
+        String REQUEST_HEADER = "requestHeader";
+    }
 }

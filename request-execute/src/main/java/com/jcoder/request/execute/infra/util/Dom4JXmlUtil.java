@@ -175,32 +175,27 @@ public class Dom4JXmlUtil {
     public Object getContent(List<Element> elementList) {
 
         Map<String, Object> nodeMap = new LinkedHashMap<>(elementList.size());
-        List<Object> nodeList = new ArrayList<>();
         Set<String> nodeSet = new HashSet<>();
+        String tagName = "";
 
         for (Element element : elementList) {
-
-            nodeSet.add(element.getName());
 
             if (element.isTextOnly()) {
                 duplicateHandler(nodeMap, element.getName(), element.getText());
             } else {
                 Object childNode = getContent(element.elements());
-
-                if (nodeMap.containsKey(element.getName())) {
-                    duplicateHandler(nodeMap, element.getName(), childNode);
-                } else {
-                    nodeMap.put(element.getName(), childNode);
-                }
-
-                if (nodeSet.contains(element.getName())) {
-                    if (nodeMap.get(element.getName()) instanceof List) {
-                        nodeList.addAll((List) nodeMap.get(element.getName()));
-                    }
-                }
+                duplicateHandler(nodeMap, element.getName(), childNode);
             }
+
+            tagName = element.getName();
+            nodeSet.add(tagName);
         }
-        return nodeList.size() > 0 ? nodeList : nodeMap;
+
+        if (nodeSet.size() == 1 && elementList.size() > 1) {
+            return nodeMap.get(tagName);
+        } else {
+            return nodeMap;
+        }
     }
 
     /**
@@ -263,11 +258,14 @@ public class Dom4JXmlUtil {
         for (String tag : datas.keySet()) {
             Element element = DocumentHelper.createElement(tag);
 
-            if (datas.get(tag) instanceof List || datas.get(tag) instanceof Map) {
-                List<Element> childs = simpleConvert(datas.get(tag), tag);
-                for (Element child : childs) {
+            if (datas.get(tag) instanceof Map) {
+                List<Element> childList = simpleConvert(datas.get(tag), tag);
+                for (Element child : childList) {
                     element.add(child);
                 }
+            } else if (datas.get(tag) instanceof List) {
+                List<Element> childList = simpleConvert(datas.get(tag), tag);
+                elementList.addAll(childList);
             } else {
                 element.setText(String.valueOf(datas.get(tag)));
             }
@@ -289,13 +287,17 @@ public class Dom4JXmlUtil {
 
         datas.forEach(data -> {
             Element element = DocumentHelper.createElement(tagName);
-            List<Element> childList = simpleConvert(data, tagName);
-            for (Element child : childList) {
-                element.add(child);
+
+            if (data instanceof List || data instanceof Map) {
+                List<Element> childList = simpleConvert(data, tagName);
+                for (Element child : childList) {
+                    element.add(child);
+                }
+            } else {
+                element.setText(String.valueOf(data));
             }
             elementList.add(element);
         });
-
         return elementList;
     }
 

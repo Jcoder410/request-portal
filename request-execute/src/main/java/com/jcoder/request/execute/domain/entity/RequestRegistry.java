@@ -32,6 +32,11 @@ public class RequestRegistry {
      * @return
      */
     public String getRequestUrl() {
+
+        if(pathVariables == null){
+            return baseRequestUrl;
+        }
+
         StringBuilder paramsStr = new StringBuilder();
         for (String param : pathVariables) {
             if (paramsStr.length() == 0) {

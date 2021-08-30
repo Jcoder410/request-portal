@@ -2,7 +2,8 @@ package com.jcoder.request.execute.infra.util;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.apache.commons.lang3.ObjectUtils;
+import com.jcoder.request.execute.infra.ExecuteConstants;
+import org.apache.commons.lang3.StringUtils;
 import org.dom4j.Document;
 import org.dom4j.DocumentException;
 import org.dom4j.DocumentHelper;
@@ -78,16 +79,13 @@ public class HttpMessageUtil {
                                      String dataNodeName) throws DocumentException {
 
         Document document = DocumentHelper.parseText(xmlStr);
-        //Element dataElement = getDataElement(document.getRootElement(), dataNodeName);
+        List<Element> elementList = getDataElement(Arrays.asList(document.getRootElement()), dataNodeName);
+        List<Object> dataList = new ArrayList<>();
+        for (Element element : elementList) {
+            dataList.add(dom4JXmlUtil.getContent(element.elements()));
+        }
 
-        List<Element> elementList = getDataElement(Arrays.asList(document.getRootElement()),dataNodeName);
-
-        /**
-         * todo 此处如果没找到节点，则需要报错
-         */
-        Object datas = dom4JXmlUtil.getContent(elementList);
-
-        return datas;
+        return dataList;
     }
 
     /**
@@ -100,66 +98,159 @@ public class HttpMessageUtil {
         List<Element> elementList = new ArrayList<>();
 
         for (Element element : elements) {
-            if(element.getQualifiedName().equals(dataNodeName)){
+            if (element.getQualifiedName().equals(dataNodeName)) {
                 elementList.add(element);
-            }else{
-                elementList.addAll(getDataElement(element.elements(),dataNodeName));
+            } else {
+                elementList.addAll(getDataElement(element.elements(), dataNodeName));
             }
         }
         return elementList;
     }
 
     /**
-     * 查找目标节点
+     * 从xml报文中提取rest请求需要的参数
      *
-     * @param element
+     * @param dataStrList
+     * @return
+     */
+    public Map<String, Object> getDataForRest(List<String> dataStrList) throws DocumentException {
+
+        Map<String, Object> dataMap = new HashMap<>();
+
+        for (String dataStr : dataStrList) {
+            Document document = DocumentHelper.parseText(dataStr);
+            Element element = document.getRootElement();
+            if (tagNameMatched(element.getName())) {
+                Object data = dom4JXmlUtil.getContent(element.elements());
+                dataMap.put(element.getName(), data);
+            }
+        }
+        return dataMap;
+    }
+
+    /**
+     * 判断对应的tag是否为我们所需要的数据
+     *
+     * @param tagName
+     * @return
+     */
+    private Boolean tagNameMatched(String tagName) {
+
+        switch (tagName) {
+            case ExecuteConstants.HttpParamType.REQUEST_PARAM:
+                return Boolean.TRUE;
+            case ExecuteConstants.HttpParamType.PATH_VARIABLE:
+                return Boolean.TRUE;
+            case ExecuteConstants.HttpParamType.REQUEST_BODY:
+                return Boolean.TRUE;
+            case ExecuteConstants.HttpParamType.REQUEST_HEADER:
+                return Boolean.TRUE;
+            default:
+                return Boolean.FALSE;
+        }
+    }
+
+    /**
+     * 将rest请求返回的数据转换成xml字符创
+     *
+     * @param dataObject
      * @param dataNodeName
      * @return
      */
-    private Element getDataElement(Element element, String dataNodeName) {
+    public List<String> getDataFromRestResponse(Object dataObject,
+                                                String dataNodeName) {
 
-        if (element.getQualifiedName().equals(dataNodeName)) {
-            return element;
+        if (dataObject instanceof List && StringUtils.isEmpty(dataNodeName)) {
+            /**
+             * todo 此处需要抛出异常
+             */
         }
 
-        Element target = null;
+        /**
+         * 将数据对象转换成element对象, 然后再将element对象转换成string
+         */
+        List<Element> elementList = dom4JXmlUtil.simpleConvert(dataObject, dataNodeName);
+        List<String> dataList = new ArrayList<>();
+        for (Element element : elementList) {
+            dataList.add(element.asXML());
+        }
+        return dataList;
+    }
 
-        for (Element child : element.elements()) {
-            target = getDataElement(child, dataNodeName);
+    /**
+     * 提取soap接口返回的报文, 并转换成xml字符串
+     *
+     * @param xmlStr
+     * @param dataNodeName
+     * @return
+     */
+    public List<String> getDataFromSoapResponse(String xmlStr,
+                                                String dataNodeName) {
+        List<String> dataList = new ArrayList<>();
+        if (StringUtils.isEmpty(dataNodeName)) {
+            dataList.add(dataNodeName);
+        } else {
+            Document document = null;
+            try {
+                document = DocumentHelper.parseText(xmlStr);
+            } catch (DocumentException e) {
+                e.printStackTrace();
+            }
+            List<Element> elementList = getDataElement(Arrays.asList(document.getRootElement()), dataNodeName);
 
-            if (target != null) {
-                break;
+            for (Element data : elementList) {
+                dataList.add(data.asXML());
             }
         }
-        return target;
+        return dataList;
     }
 
     public static void main(String[] args) throws DocumentException {
-        String xmlStr = "<soap:Envelope xmlns:soap=\"http://schemas.xmlsoap.org/soap/envelope/\">\n" +
-                "   <soap:Body>\n" +
-                "      <ns2:multiPersonResponse xmlns:ns2=\"http://app.test.execute.request.jcoder.com/\">\n" +
-                "         <return>\n" +
-                "            <age>18</age>\n" +
-                "            <country>中国</country>\n" +
-                "            <name>盖世猪猪</name>\n" +
-                "            <personId>1001</personId>\n" +
-                "            <relations>父亲</relations>\n" +
-                "            <relations>母亲</relations>\n" +
-                "            <sex>男</sex>\n" +
-                "         </return>\n" +
-                "      </ns2:multiPersonResponse>\n" +
-                "   </soap:Body>\n" +
-                "</soap:Envelope>";
 
-        HttpMessageUtil httpMessageUtil = new HttpMessageUtil();
-        Object datas = httpMessageUtil.extractDataFromXml(xmlStr,"return");
+        Map<String, Object> dataMap01 = new HashMap<>();
+        dataMap01.put("personId", 1000L);
+        dataMap01.put("name", "盖世猪猪");
+        dataMap01.put("age", 28);
+        dataMap01.put("sex", "男");
+        dataMap01.put("relations", Arrays.asList("父亲", "母亲"));
+
+        Map<String, Object> dataMap02 = new HashMap<>();
+        dataMap02.put("personId", 1001L);
+        dataMap02.put("name", "龙馍馍");
+        dataMap02.put("age", 20);
+        dataMap02.put("sex", "女");
+        dataMap02.put("relations", Arrays.asList("父亲", "母亲"));
+
+        String xmlStr = "<?xml version=\"1.0\" encoding=\"UTF-16\"?>\n" +
+                "<requestBody>\n" +
+                "    <person>\n" +
+                "        <name>盖世猪猪</name>\n" +
+                "        <sex>男</sex>\n" +
+                "        <relations>父亲</relations>\n" +
+                "        <relations>母亲</relations>\n" +
+                "    </person>\n" +
+                "    <person>\n" +
+                "        <name>压力山大</name>\n" +
+                "        <sex>男</sex>\n" +
+                "        <relations>父亲</relations>\n" +
+                "        <relations>母亲</relations>\n" +
+                "        <relations>姐姐</relations>\n" +
+                "    </person>\n" +
+                "    <person>\n" +
+                "        <name>龙馍馍</name>\n" +
+                "        <sex>女</sex>\n" +
+                "        <relations>父亲</relations>\n" +
+                "        <relations>姐姐</relations>\n" +
+                "    </person>\n" +
+                "</requestBody>";
+        Dom4JXmlUtil dom4JXmlUtil = new Dom4JXmlUtil();
+        Document document = DocumentHelper.parseText(xmlStr);
+        Element element = document.getRootElement();
+        Object datas = dom4JXmlUtil.getContent(element.elements());
 
         ObjectMapper objectMapper = new ObjectMapper();
-        JsonNode jsonNode = objectMapper.convertValue(datas,JsonNode.class);
-        System.out.println(jsonNode.isArray());
-        System.out.println(jsonNode.toPrettyString());
-
-        System.out.println("---------------------结束---------------------");
+        System.out.println(objectMapper.convertValue(datas, JsonNode.class).toPrettyString());
+        System.out.println(((List) datas).size());
 
     }
 
