@@ -38,9 +38,9 @@ public class RequestRegistryServiceImpl implements IRequestRegistryService {
         }
 
         //构建requestMappingInfo对象
-        RequestMappingInfo requestMappingInfo = buildRequestMappingInfo(requestRegistry.getRequestUrl(), method);
+        RequestMappingInfo requestMappingInfo = buildRequestMappingInfo(requestRegistry.getBaseRequestUrl(), method);
         if (urlRegisted(requestMappingInfo)) {
-            throw new CommonException("request.registry.request_registered", requestRegistry.getRequestUrl());
+            throw new CommonException("request.registry.request_registered", requestRegistry.getBaseRequestUrl());
         }
 
         //获取请求处理方法的名称
@@ -67,7 +67,7 @@ public class RequestRegistryServiceImpl implements IRequestRegistryService {
         RequestMappingHandlerMapping requestMappingHandlerMapping = webApplicationContext.getBean(RequestMappingHandlerMapping.class);
 
         //构建requestMappingInfo对象
-        RequestMappingInfo requestMappingInfo = buildRequestMappingInfo(requestRegistry.getRequestUrl(), method);
+        RequestMappingInfo requestMappingInfo = buildRequestMappingInfo(requestRegistry.getBaseRequestUrl(), method);
 
         requestMappingHandlerMapping.unregisterMapping(requestMappingInfo);
     }
@@ -109,7 +109,6 @@ public class RequestRegistryServiceImpl implements IRequestRegistryService {
     }
 
     /**
-     * 废弃
      * 验证url是否已经存在
      *
      * @param requestUrl

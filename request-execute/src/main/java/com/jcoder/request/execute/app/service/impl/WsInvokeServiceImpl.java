@@ -26,7 +26,7 @@ public class WsInvokeServiceImpl implements IWsInvokeService {
         SoapResponse response = null;
         try {
             response = requestInvokeService.soapInvoke(params);
-        } catch (DocumentException e) {
+        } catch (Exception e) {
             e.printStackTrace();
             SoapResponse errorReturn = new SoapResponse();
             errorReturn.setStatusCode("E");

@@ -1,7 +1,5 @@
 package com.jcoder.request.execute.infra.util;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jcoder.request.execute.infra.ExecuteConstants;
 import org.apache.commons.lang3.StringUtils;
 import org.dom4j.Document;
@@ -75,8 +73,8 @@ public class HttpMessageUtil {
      * @return
      * @throws DocumentException
      */
-    public Object extractDataFromXml(String xmlStr,
-                                     String dataNodeName) throws DocumentException {
+    public List<Object> extractDataFromXml(String xmlStr,
+                                           String dataNodeName) throws DocumentException {
 
         Document document = DocumentHelper.parseText(xmlStr);
         List<Element> elementList = getDataElement(Arrays.asList(document.getRootElement()), dataNodeName);
@@ -205,52 +203,7 @@ public class HttpMessageUtil {
         return dataList;
     }
 
-    public static void main(String[] args) throws DocumentException {
-
-        Map<String, Object> dataMap01 = new HashMap<>();
-        dataMap01.put("personId", 1000L);
-        dataMap01.put("name", "盖世猪猪");
-        dataMap01.put("age", 28);
-        dataMap01.put("sex", "男");
-        dataMap01.put("relations", Arrays.asList("父亲", "母亲"));
-
-        Map<String, Object> dataMap02 = new HashMap<>();
-        dataMap02.put("personId", 1001L);
-        dataMap02.put("name", "龙馍馍");
-        dataMap02.put("age", 20);
-        dataMap02.put("sex", "女");
-        dataMap02.put("relations", Arrays.asList("父亲", "母亲"));
-
-        String xmlStr = "<?xml version=\"1.0\" encoding=\"UTF-16\"?>\n" +
-                "<requestBody>\n" +
-                "    <person>\n" +
-                "        <name>盖世猪猪</name>\n" +
-                "        <sex>男</sex>\n" +
-                "        <relations>父亲</relations>\n" +
-                "        <relations>母亲</relations>\n" +
-                "    </person>\n" +
-                "    <person>\n" +
-                "        <name>压力山大</name>\n" +
-                "        <sex>男</sex>\n" +
-                "        <relations>父亲</relations>\n" +
-                "        <relations>母亲</relations>\n" +
-                "        <relations>姐姐</relations>\n" +
-                "    </person>\n" +
-                "    <person>\n" +
-                "        <name>龙馍馍</name>\n" +
-                "        <sex>女</sex>\n" +
-                "        <relations>父亲</relations>\n" +
-                "        <relations>姐姐</relations>\n" +
-                "    </person>\n" +
-                "</requestBody>";
-        Dom4JXmlUtil dom4JXmlUtil = new Dom4JXmlUtil();
-        Document document = DocumentHelper.parseText(xmlStr);
-        Element element = document.getRootElement();
-        Object datas = dom4JXmlUtil.getContent(element.elements());
-
-        ObjectMapper objectMapper = new ObjectMapper();
-        System.out.println(objectMapper.convertValue(datas, JsonNode.class).toPrettyString());
-        System.out.println(((List) datas).size());
+    public static void main(String[] args) {
 
     }
 

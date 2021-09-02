@@ -263,13 +263,14 @@ public class Dom4JXmlUtil {
                 for (Element child : childList) {
                     element.add(child);
                 }
+                elementList.add(element);
             } else if (datas.get(tag) instanceof List) {
                 List<Element> childList = simpleConvert(datas.get(tag), tag);
                 elementList.addAll(childList);
             } else {
                 element.setText(String.valueOf(datas.get(tag)));
+                elementList.add(element);
             }
-            elementList.add(element);
         }
         return elementList;
     }

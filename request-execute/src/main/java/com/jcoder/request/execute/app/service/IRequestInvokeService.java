@@ -18,7 +18,7 @@ public interface IRequestInvokeService {
      * @param requestParam
      * @return
      */
-    SoapResponse soapInvoke(SoapRequestParam requestParam) throws DocumentException;
+    SoapResponse soapInvoke(SoapRequestParam requestParam);
 
     /**
      * 用于rest接口的透传
@@ -32,6 +32,6 @@ public interface IRequestInvokeService {
     ResponseEntity<Object> restInvoke(Map<String, Object> requestParams,
                                       Object requestBody,
                                       Map<String, Object> pathParams,
-                                      Map<String, Object> requestHeader) throws DocumentException;
+                                      Map<String, Object> requestHeader);
 
 }

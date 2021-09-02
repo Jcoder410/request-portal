@@ -51,8 +51,6 @@ public class ExecuteRequestServiceImpl implements IExecuteRequestService {
         HttpMethod httpMethod = RequestToolUtil.getHttpMethod(String.valueOf(requestMethod));
         ResponseEntity<Object> response = restTemplate.exchange(requestUrl, httpMethod, entity, Object.class, pathParams);
 
-        System.out.println(response.getBody().toString());
-
         return response;
     }
 
@@ -66,17 +64,14 @@ public class ExecuteRequestServiceImpl implements IExecuteRequestService {
         HttpClientBuilder httpClientBuilder = HttpClientBuilder.create();
         CloseableHttpClient closeableHttpClient = httpClientBuilder.build();
 
-        HttpPost httpPost = new HttpPost(url);
-        httpPost.setHeader("SOAPAction", soapAction);
+        /**
+         * 构建soap请求头
+         */
+        HttpPost httpPost = buildSoapRequestHeader(url, soapAction, soapVersion, httpHeader);
 
-        if (soapVersion.equalsIgnoreCase(ExecuteConstants.SoapVersion.SOAP_1_POINT_1)) {
-            httpPost.setHeader("Content-Type", "text/xml;charset=utf-8");
-        } else if (soapVersion.equalsIgnoreCase(ExecuteConstants.SoapVersion.SOAP_1_POINT_2)) {
-            httpPost.setHeader("Content-Type", "application/soap+xml;charset=utf-8");
-        } else {
-            throw new CommonException("request.execute.soap_version_error");
-        }
-
+        /**
+         * 设置请求体
+         */
         ByteArrayEntity data = new ByteArrayEntity(params.getBytes());
         httpPost.setEntity(data);
 
@@ -96,6 +91,28 @@ public class ExecuteRequestServiceImpl implements IExecuteRequestService {
         return result;
     }
 
+    private HttpPost buildSoapRequestHeader(String url,
+                                            String soapAction,
+                                            String soapVersion,
+                                            Map<String, String> httpHeader) {
+        HttpPost httpPost = new HttpPost(url);
+        httpPost.setHeader("SOAPAction", soapAction);
+
+        if (soapVersion.equalsIgnoreCase(ExecuteConstants.SoapVersion.SOAP_1_POINT_1)) {
+            httpPost.setHeader("Content-Type", "text/xml;charset=utf-8");
+        } else if (soapVersion.equalsIgnoreCase(ExecuteConstants.SoapVersion.SOAP_1_POINT_2)) {
+            httpPost.setHeader("Content-Type", "application/soap+xml;charset=utf-8");
+        } else {
+            throw new CommonException("request.execute.soap_version_error");
+        }
+
+        for (String key : httpHeader.keySet()) {
+            httpPost.setHeader(key, httpHeader.get(key));
+        }
+
+        return httpPost;
+    }
+
     /**
      * 构建请求头
      *
@@ -109,9 +126,7 @@ public class ExecuteRequestServiceImpl implements IExecuteRequestService {
         headers.set("charset", "UTF-8");
 
         for (String name : headerParams.keySet()) {
-            if (name.startsWith("test")) {
-                headers.add(name, String.valueOf(headerParams.get(name)));
-            }
+            headers.add(name, String.valueOf(headerParams.get(name)));
         }
         return headers;
     }

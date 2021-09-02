@@ -2,6 +2,7 @@ package com.jcoder.request.execute.domain.entity;
 
 import com.jcoder.request.common.util.CommonConstants;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -26,34 +27,6 @@ public class RequestRegistry {
      */
     private String requestMethod;
 
-    /**
-     * 获取完整的请求地址, 将路径参数部分添加到url
-     *
-     * @return
-     */
-    public String getRequestUrl() {
-
-        if(pathVariables == null){
-            return baseRequestUrl;
-        }
-
-        StringBuilder paramsStr = new StringBuilder();
-        for (String param : pathVariables) {
-            if (paramsStr.length() == 0) {
-                paramsStr.append(CommonConstants.SpecialSymbol.OPENING_BRACE)
-                        .append(param)
-                        .append(CommonConstants.SpecialSymbol.CLOSING_BRACE);
-            } else {
-                paramsStr.append(CommonConstants.SpecialSymbol.FORWARD_SLASH)
-                        .append(CommonConstants.SpecialSymbol.OPENING_BRACE)
-                        .append(param)
-                        .append(CommonConstants.SpecialSymbol.CLOSING_BRACE);
-            }
-        }
-        return paramsStr.length() == 0 ? baseRequestUrl : baseRequestUrl + CommonConstants.SpecialSymbol.FORWARD_SLASH + paramsStr.toString();
-
-    }
-
     public List<String> getPathVariables() {
         return pathVariables;
     }
@@ -67,7 +40,24 @@ public class RequestRegistry {
     }
 
     public void setBaseRequestUrl(String baseRequestUrl) {
+
         this.baseRequestUrl = baseRequestUrl;
+
+        /**
+         * 解析获得pathVariable
+         */
+        String[] urlSnippets = baseRequestUrl.split(CommonConstants.SpecialSymbol.FORWARD_SLASH);
+        for (String pathSnippet : urlSnippets) {
+            if (pathSnippet.startsWith(CommonConstants.SpecialSymbol.OPENING_BRACE)
+                    && pathSnippet.endsWith(CommonConstants.SpecialSymbol.CLOSING_BRACE)) {
+
+                if (this.pathVariables == null) {
+                    this.pathVariables = new ArrayList<>();
+                }
+                this.pathVariables.add(pathSnippet.substring(1, pathSnippet.length() - 1));
+            }
+        }
+
     }
 
     public String getRequestMethod() {
