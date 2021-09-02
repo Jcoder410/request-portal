@@ -1,5 +1,6 @@
 package com.jcoder.request.common;
 
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -30,17 +31,27 @@ public class RequestCacheEntity {
     private String targetRequestMethod;
 
     /**
-     * 路径参数
+     * 目标接口返回集合数据标识, 用于处理soap接口透传成rest接口的情况
+     */
+    private Boolean targetReturnListFlag;
+
+    /**
+     * 路径参数名称列表
+     */
+    private List<String> pathVariableList;
+
+    /**
+     * 路径参数值
      */
     private Map<String, Object> defaultPathVariables;
 
     /**
-     * 默认的请求地址参数
+     * 默认的请求地址参数值
      */
     private Map<String, Object> defaultRequestParams;
 
     /**
-     * 设置的请求头参数
+     * 设置的请求头参数值
      */
     private Map<String, String> defaultRequestHeaders;
 
@@ -55,7 +66,8 @@ public class RequestCacheEntity {
     private String paramNodeName;
 
     /**
-     * 数据节点名称, 集合参数下的节点名称
+     * 数据节点名称
+     * soap接口透传成rest接口是, 传入的参数如果是一个集合, 则需要指定每一个数据对象对应的xml节点名称
      */
     private String dataTagName;
 
@@ -101,6 +113,22 @@ public class RequestCacheEntity {
 
     public void setTargetRequestMethod(String targetRequestMethod) {
         this.targetRequestMethod = targetRequestMethod;
+    }
+
+    public Boolean getTargetReturnListFlag() {
+        return targetReturnListFlag;
+    }
+
+    public void setTargetReturnListFlag(Boolean targetReturnListFlag) {
+        this.targetReturnListFlag = targetReturnListFlag;
+    }
+
+    public List<String> getPathVariableList() {
+        return pathVariableList;
+    }
+
+    public void setPathVariableList(List<String> pathVariableList) {
+        this.pathVariableList = pathVariableList;
     }
 
     public Map<String, Object> getDefaultPathVariables() {
