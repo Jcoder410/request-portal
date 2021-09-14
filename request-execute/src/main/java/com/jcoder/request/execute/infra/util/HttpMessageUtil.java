@@ -158,6 +158,10 @@ public class HttpMessageUtil {
     public List<String> getDataFromRestResponse(Object dataObject,
                                                 String dataNodeName) {
 
+        if(null == dataObject){
+            return new ArrayList<>();
+        }
+
         if (dataObject instanceof List && StringUtils.isEmpty(dataNodeName)) {
             /**
              * todo 此处需要抛出异常
@@ -177,16 +181,17 @@ public class HttpMessageUtil {
 
     /**
      * 提取soap接口返回的报文, 并转换成xml字符串
-     *
-     * @param xmlStr
-     * @param dataNodeName
+     * @param xmlStr xml格式的字符串
+     * @param dataNodeName 需要提取的节点名称
+     * @param type 提取类型:NODE或CONTENT
      * @return
      */
     public List<String> getDataFromSoapResponse(String xmlStr,
-                                                String dataNodeName) {
+                                                String dataNodeName,
+                                                String type) {
         List<String> dataList = new ArrayList<>();
         if (StringUtils.isEmpty(dataNodeName)) {
-            dataList.add(dataNodeName);
+            dataList.add(xmlStr);
         } else {
             Document document = null;
             try {
@@ -197,14 +202,14 @@ public class HttpMessageUtil {
             List<Element> elementList = getDataElement(Arrays.asList(document.getRootElement()), dataNodeName);
 
             for (Element data : elementList) {
-                dataList.add(data.asXML());
+                if(type.equals(ExecuteConstants.ExtractType.XML_NODE)){
+                    dataList.add(data.asXML());
+                }else{
+                    dataList.add(data.asXML());
+                }
             }
         }
         return dataList;
-    }
-
-    public static void main(String[] args) {
-
     }
 
 }

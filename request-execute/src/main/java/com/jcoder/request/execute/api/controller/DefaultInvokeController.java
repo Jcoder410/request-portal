@@ -5,6 +5,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletRequest;
 import java.util.Map;
 
 /**
@@ -13,23 +14,25 @@ import java.util.Map;
  * @author Qiu
  */
 @RestController
-@RequestMapping("/default")
+@RequestMapping("/invoke")
 public class DefaultInvokeController {
 
     @Autowired
     private IDefaultInvokeService defaultInvokeService;
 
-    @RequestMapping(value = "/invoke/{*path}",
+    @RequestMapping(value = "/default/**",
             produces = "application/json;charset=UTF-8",
             method = {RequestMethod.GET, RequestMethod.POST, RequestMethod.DELETE, RequestMethod.PUT, RequestMethod.PATCH})
     public ResponseEntity<?> getInvoke(@RequestParam Map<String, Object> requestParams,
                                        @RequestBody(required = false) Object requestBody,
-                                       @PathVariable(required = false) String path,
-                                       @RequestHeader(required = false) Map<String, Object> requestHeader) {
+                                       @RequestHeader(required = false) Map<String, Object> requestHeader,
+                                       HttpServletRequest request) {
+
+        System.out.println(request.getRequestURI());
 
         ResponseEntity responseEntity = defaultInvokeService.executeInvoke(requestParams,
                 requestBody,
-                path,
+                request.getRequestURI(),
                 requestHeader);
 
         return responseEntity;

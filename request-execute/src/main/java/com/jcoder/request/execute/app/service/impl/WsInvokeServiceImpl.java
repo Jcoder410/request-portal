@@ -4,6 +4,7 @@ import com.jcoder.request.execute.app.service.IRequestInvokeService;
 import com.jcoder.request.execute.app.service.IWsInvokeService;
 import com.jcoder.request.execute.domain.entity.SoapRequestParam;
 import com.jcoder.request.execute.domain.entity.SoapResponse;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.dom4j.DocumentException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -30,9 +31,9 @@ public class WsInvokeServiceImpl implements IWsInvokeService {
             e.printStackTrace();
             SoapResponse errorReturn = new SoapResponse();
             errorReturn.setStatusCode("E");
-            errorReturn.setMessage(e.getMessage());
+            errorReturn.setMessage(ExceptionUtils.getStackTrace(e));
             errorReturn.payload = new ArrayList<>();
-            return response;
+            return errorReturn;
         }
 
         return response;

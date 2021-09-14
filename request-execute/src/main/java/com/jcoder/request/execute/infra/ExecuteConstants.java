@@ -66,4 +66,14 @@ public class ExecuteConstants {
 
         String REQUEST_HEADER = "requestHeader";
     }
+
+    /**
+     * 数据提取类型
+     */
+    public interface ExtractType {
+
+        String XML_NODE = "NODE";
+
+        String XML_CONTENT = "CONTENT";
+    }
 }

@@ -2,11 +2,9 @@ package com.jcoder.request.execute.domain.entity;
 
 import com.jcoder.request.execute.infra.util.CustomXmlAdapter;
 
-import javax.xml.bind.annotation.XmlAccessType;
-import javax.xml.bind.annotation.XmlAccessorType;
-import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.*;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -20,5 +18,8 @@ public class SoapResponse extends BaseResponseEntity {
 
     @XmlElement(name = "payload")
     @XmlJavaTypeAdapter(CustomXmlAdapter.class)
-    public List<String> payload;
+    public List<String> payload = new ArrayList<>();
+
+    @XmlTransient
+    public String errorCode;
 }

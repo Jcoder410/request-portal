@@ -7,6 +7,7 @@ import com.jcoder.request.execute.app.service.IDefaultInvokeService;
 import com.jcoder.request.execute.app.service.IRequestInfoService;
 import com.jcoder.request.execute.app.service.IRequestInvokeService;
 import com.jcoder.request.execute.infra.ExecuteConstants;
+import org.apache.cxf.common.util.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -71,14 +72,28 @@ public class DefaultInvokeServiceImpl implements IDefaultInvokeService {
      */
     private Map<String, Object> extractPathParams(String pathVariableStr, List<String> pathVariableList) {
 
-        String[] pathVariables = pathVariableStr.split(CommonConstants.SpecialSymbol.FORWARD_SLASH);
-        if (pathVariables.length != pathVariableList.size()) {
-            throw new CommonException("request.execute.extract_path_param_err");
+        /**
+         * 获取pathVariable部分, 除开默认路径，其他的一律认为是路径参数部分
+         */
+        Map<String, Object> pathParamMap = new HashMap<>();
+
+        String defaultUrl = "/invoke/default/";
+        if(pathVariableStr.length() > defaultUrl.length()){
+
+            pathVariableStr = pathVariableStr.replace(defaultUrl, "");
+            String[] pathVariables = pathVariableStr.split(CommonConstants.SpecialSymbol.FORWARD_SLASH);
+
+            if (pathVariables.length != pathVariableList.size()) {
+                throw new CommonException("request.execute.extract_path_param_err");
+            }
+
+            for (int i = 0; i < pathVariableList.size(); i++) {
+                pathParamMap.put(pathVariableList.get(i), pathVariables[i]);
+            }
         }
 
-        Map<String, Object> pathParamMap = new HashMap<>();
-        for (int i = 0; i < pathVariableList.size(); i++) {
-            pathParamMap.put(pathVariableList.get(i), pathVariables[i]);
+        if (pathParamMap.size() != pathVariableList.size()) {
+            throw new CommonException("request.execute.extract_path_param_err");
         }
 
         return pathParamMap;

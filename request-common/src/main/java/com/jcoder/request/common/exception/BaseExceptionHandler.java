@@ -53,6 +53,17 @@ public class BaseExceptionHandler {
         return new ResponseEntity(er, HttpStatus.OK);
     }
 
+    @ExceptionHandler({RuntimeException.class, Exception.class})
+    public ResponseEntity<ExceptionResponse> process(HttpServletRequest request, Exception exception) {
+        if (LOGGER.isErrorEnabled()) {
+            LOGGER.error(this.exceptionMessage("Unknown exception", request, (HandlerMethod)null), exception);
+        }
+
+        ExceptionResponse er = new ExceptionResponse("error.error",exception.getMessage());
+        this.setDevException(er, exception);
+        return new ResponseEntity(er, HttpStatus.OK);
+    }
+
     private String exceptionMessage(String message, HttpServletRequest request, HandlerMethod method) {
         return String.format(message + ", Request: {URI=%s, method=%s}, User: %s",
                 request.getRequestURI(),

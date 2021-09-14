@@ -7,11 +7,13 @@ import com.jcoder.request.execute.app.service.IRequestInfoService;
 import com.jcoder.request.execute.app.service.IRequestInvokeService;
 import com.jcoder.request.execute.domain.entity.SoapRequestParam;
 import com.jcoder.request.execute.domain.entity.SoapResponse;
+import com.jcoder.request.execute.domain.entity.SoapReturnEntity;
 import com.jcoder.request.execute.infra.ExecuteConstants;
 import com.jcoder.request.execute.infra.util.HttpMessageUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.dom4j.DocumentException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
@@ -42,7 +44,6 @@ public class RequestInvokeServiceImpl implements IRequestInvokeService {
         //获取接口注册信息
         RequestCacheEntity requestCacheEntity = requestInfoService.getRequestInfo(requestParam.getInterfaceCode());
 
-        List<String> dataList;
         /**
          * 如果目标接口的接口类型是rest,则需要将xml报文转换成rest接口能接收的json格式
          */
@@ -51,13 +52,12 @@ public class RequestInvokeServiceImpl implements IRequestInvokeService {
             /**
              * 执行rest请求
              */
-            dataList = executeRestBaseOnSoap(requestCacheEntity, requestParam.payload);
-
+            return executeRestBaseOnSoap(requestCacheEntity, requestParam.payload);
         } else {
             /**
              * 执行soap请求
              */
-            String response = executeRequestService.executeSoapRequest(requestCacheEntity.getTargetRequestUrl(),
+            SoapReturnEntity response = executeRequestService.executeSoapRequest(requestCacheEntity.getTargetRequestUrl(),
                     "",
                     requestCacheEntity.getSoapAction(),
                     requestCacheEntity.getSoapVersion(),
@@ -66,14 +66,53 @@ public class RequestInvokeServiceImpl implements IRequestInvokeService {
             /**
              * 提取soap报文, 并组装返回结果
              */
-            dataList = httpMessageUtil.getDataFromSoapResponse(response, requestCacheEntity.getResponseTagName());
+            return buildSoapResponse(response, requestCacheEntity);
         }
+    }
+
+    /**
+     * 根据目标soap接口的返回，构建透传接口的返回内容
+     * 需要根据目标接口返回的http状态来设定透传接口的返回状态
+     *
+     * @param response
+     * @param requestCacheEntity
+     * @return
+     */
+    private SoapResponse buildSoapResponse(SoapReturnEntity response,
+                                           RequestCacheEntity requestCacheEntity) {
 
         SoapResponse soapResponse = new SoapResponse();
-        soapResponse.payload = dataList;
-        soapResponse.setStatusCode("S");
 
+        if (response.getHttpStatus() == HttpStatus.OK.value()) {
+            soapResponse.setStatusCode("S");
+            /**
+             * 如果设置了数据提取节点, 则进行提取; 否则按原样返回, 不做任何出路
+             */
+            if (StringUtils.isEmpty(requestCacheEntity.getResponseTagName())) {
+                soapResponse.payload.add(response.getResponseStr());
+            } else {
+                soapResponse.payload = httpMessageUtil.getDataFromSoapResponse(response.getResponseStr(),
+                        requestCacheEntity.getResponseTagName(),
+                        ExecuteConstants.ExtractType.XML_NODE);
+            }
+        } else {
+            soapResponse.setStatusCode("E");
+            if (StringUtils.isEmpty(requestCacheEntity.getResponseErrorTagName())) {
+                soapResponse.setMessage(response.getResponseStr());
+            } else {
+                List<String> errorList = httpMessageUtil.getDataFromSoapResponse(response.getResponseStr(),
+                        requestCacheEntity.getResponseErrorTagName(),
+                        ExecuteConstants.ExtractType.XML_CONTENT);
+
+                StringBuilder errorMsg = new StringBuilder("");
+                for (String error : errorList) {
+                    errorMsg.append(error);
+                }
+                soapResponse.setMessage(errorMsg.toString());
+            }
+        }
         return soapResponse;
+
     }
 
     /**
@@ -84,7 +123,7 @@ public class RequestInvokeServiceImpl implements IRequestInvokeService {
      * @param paramList
      * @return
      */
-    private List<String> executeRestBaseOnSoap(RequestCacheEntity requestCacheEntity, List<String> paramList) {
+    private SoapResponse executeRestBaseOnSoap(RequestCacheEntity requestCacheEntity, List<String> paramList) {
 
         /**
          * 获取rest请求的参数
@@ -105,14 +144,21 @@ public class RequestInvokeServiceImpl implements IRequestInvokeService {
                 restParamMap.get(ExecuteConstants.HttpParamType.REQUEST_BODY),
                 (Map<String, Object>) restParamMap.get(ExecuteConstants.HttpParamType.PATH_VARIABLE),
                 (Map<String, Object>) restParamMap.get(ExecuteConstants.HttpParamType.REQUEST_HEADER));
-
         /**
          * 提取返回数据
          */
         List<String> dataList = httpMessageUtil.getDataFromRestResponse(restResponse.getBody(),
                 requestCacheEntity.getResponseTagName());
 
-        return dataList;
+        SoapResponse response = new SoapResponse();
+        response.setStatusCode("S");
+        response.payload = dataList;
+
+        if (restResponse.getStatusCode() != HttpStatus.OK) {
+            response.setStatusCode("E");
+        }
+
+        return response;
     }
 
     @Override
@@ -179,7 +225,7 @@ public class RequestInvokeServiceImpl implements IRequestInvokeService {
         /**
          * 执行soap请求
          */
-        String soapResponse = executeRequestService.executeSoapRequest(requestCacheEntity.getTargetRequestUrl(),
+        SoapReturnEntity soapResponse = executeRequestService.executeSoapRequest(requestCacheEntity.getTargetRequestUrl(),
                 soapParam,
                 requestCacheEntity.getSoapAction(),
                 requestCacheEntity.getSoapVersion(),
@@ -191,7 +237,7 @@ public class RequestInvokeServiceImpl implements IRequestInvokeService {
          */
         List<Object> responseData = null;
         try {
-            responseData = httpMessageUtil.extractDataFromXml(soapResponse, requestCacheEntity.getResponseTagName());
+            responseData = httpMessageUtil.extractDataFromXml(soapResponse.getResponseStr(), requestCacheEntity.getResponseTagName());
         } catch (DocumentException e) {
             throw new CommonException("request.execute.build_xml_err", e);
         }

@@ -1,5 +1,6 @@
 package com.jcoder.request.execute.app.service;
 
+import com.jcoder.request.execute.domain.entity.SoapReturnEntity;
 import org.springframework.http.ResponseEntity;
 
 import java.util.Map;
@@ -39,10 +40,10 @@ public interface IExecuteRequestService {
      * @param httpHeader
      * @return
      */
-    String executeSoapRequest(String url,
-                              String params,
-                              String soapAction,
-                              String soapVersion,
-                              Map<String, String> httpHeader);
+    SoapReturnEntity executeSoapRequest(String url,
+                                        String params,
+                                        String soapAction,
+                                        String soapVersion,
+                                        Map<String, String> httpHeader);
 
 }

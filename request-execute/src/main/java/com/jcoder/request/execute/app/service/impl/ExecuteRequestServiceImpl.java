@@ -3,6 +3,7 @@ package com.jcoder.request.execute.app.service.impl;
 import com.jcoder.request.common.exception.CommonException;
 import com.jcoder.request.common.util.CommonConstants;
 import com.jcoder.request.execute.app.service.IExecuteRequestService;
+import com.jcoder.request.execute.domain.entity.SoapReturnEntity;
 import com.jcoder.request.execute.infra.ExecuteConstants;
 import com.jcoder.request.execute.infra.util.RequestToolUtil;
 import org.apache.http.client.methods.CloseableHttpResponse;
@@ -17,6 +18,7 @@ import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
+import java.io.IOException;
 import java.util.Map;
 
 /**
@@ -55,11 +57,11 @@ public class ExecuteRequestServiceImpl implements IExecuteRequestService {
     }
 
     @Override
-    public String executeSoapRequest(String url,
-                                     String params,
-                                     String soapAction,
-                                     String soapVersion,
-                                     Map<String, String> httpHeader) {
+    public SoapReturnEntity executeSoapRequest(String url,
+                                               String params,
+                                               String soapAction,
+                                               String soapVersion,
+                                               Map<String, String> httpHeader) {
 
         HttpClientBuilder httpClientBuilder = HttpClientBuilder.create();
         CloseableHttpClient closeableHttpClient = httpClientBuilder.build();
@@ -75,20 +77,39 @@ public class ExecuteRequestServiceImpl implements IExecuteRequestService {
         ByteArrayEntity data = new ByteArrayEntity(params.getBytes());
         httpPost.setEntity(data);
 
-        String result = "";
+        SoapReturnEntity returnEntity;
         try {
             CloseableHttpResponse response = closeableHttpClient.execute(httpPost);
-            org.apache.http.HttpEntity httpEntity = response.getEntity();
+            returnEntity = buildSoapReturn(response);
 
-            if (httpEntity != null) {
-                result = EntityUtils.toString(httpEntity, "UTF-8");
-            }
         } catch (Exception e) {
             throw new CommonException("request.execute.soap_request_error", e);
         } finally {
             IOUtils.closeQuietly(closeableHttpClient);
         }
-        return result;
+        return returnEntity;
+    }
+
+    /**
+     * 构建webservice执行结果的返回，主要是提取http状态以及对应的报文
+     *
+     * @param response
+     * @return
+     * @throws IOException
+     */
+    private SoapReturnEntity buildSoapReturn(CloseableHttpResponse response) throws IOException {
+
+        org.apache.http.HttpEntity httpEntity = response.getEntity();
+        String result = "";
+        if (httpEntity != null) {
+            result = EntityUtils.toString(httpEntity, "UTF-8");
+        }
+
+        SoapReturnEntity returnEntity = new SoapReturnEntity();
+        returnEntity.setResponseStr(result);
+        returnEntity.setHttpStatus(response.getStatusLine().getStatusCode());
+
+        return returnEntity;
     }
 
     private HttpPost buildSoapRequestHeader(String url,
@@ -106,8 +127,10 @@ public class ExecuteRequestServiceImpl implements IExecuteRequestService {
             throw new CommonException("request.execute.soap_version_error");
         }
 
-        for (String key : httpHeader.keySet()) {
-            httpPost.setHeader(key, httpHeader.get(key));
+        if (httpHeader != null) {
+            for (String key : httpHeader.keySet()) {
+                httpPost.setHeader(key, httpHeader.get(key));
+            }
         }
 
         return httpPost;
@@ -125,9 +148,12 @@ public class ExecuteRequestServiceImpl implements IExecuteRequestService {
         headers.setContentType(MediaType.APPLICATION_JSON);
         headers.set("charset", "UTF-8");
 
-        for (String name : headerParams.keySet()) {
-            headers.add(name, String.valueOf(headerParams.get(name)));
+        if (headerParams != null) {
+            for (String name : headerParams.keySet()) {
+                headers.add(name, String.valueOf(headerParams.get(name)));
+            }
         }
+
         return headers;
     }
 
@@ -144,18 +170,21 @@ public class ExecuteRequestServiceImpl implements IExecuteRequestService {
         Boolean hasParam = Boolean.FALSE;
         paramsStr.append(CommonConstants.SpecialSymbol.QUESTION_MARK);
 
-        for (String paramName : requestParams.keySet()) {
+        if (requestParams != null) {
+            for (String paramName : requestParams.keySet()) {
 
-            if (hasParam) {
-                paramsStr.append(CommonConstants.SpecialSymbol.AT);
+                if (hasParam) {
+                    paramsStr.append(CommonConstants.SpecialSymbol.AT);
+                }
+                paramsStr.append(paramName)
+                        .append(CommonConstants.SpecialSymbol.EQUAL)
+                        .append(CommonConstants.SpecialSymbol.OPENING_BRACE)
+                        .append(paramName)
+                        .append(CommonConstants.SpecialSymbol.CLOSING_BRACE);
+                hasParam = Boolean.TRUE;
             }
-            paramsStr.append(paramName)
-                    .append(CommonConstants.SpecialSymbol.EQUAL)
-                    .append(CommonConstants.SpecialSymbol.OPENING_BRACE)
-                    .append(paramName)
-                    .append(CommonConstants.SpecialSymbol.CLOSING_BRACE);
-            hasParam = Boolean.TRUE;
         }
+
         return paramsStr.toString();
     }
 }

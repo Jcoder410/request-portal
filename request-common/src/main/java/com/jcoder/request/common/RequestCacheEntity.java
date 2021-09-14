@@ -1,5 +1,7 @@
 package com.jcoder.request.common;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -41,7 +43,7 @@ public class RequestCacheEntity {
     private List<String> pathVariableList;
 
     /**
-     * 路径参数值
+     * 默认路径参数值
      */
     private Map<String, Object> defaultPathVariables;
 
@@ -82,6 +84,11 @@ public class RequestCacheEntity {
      * 返回报文中的数据节点名称
      */
     private String responseTagName;
+
+    /**
+     * 返回的错误报文节点名称
+     */
+    private String responseErrorTagName;
 
     public String getRequestCode() {
         return requestCode;
@@ -201,5 +208,13 @@ public class RequestCacheEntity {
 
     public void setResponseTagName(String responseTagName) {
         this.responseTagName = responseTagName;
+    }
+
+    public String getResponseErrorTagName() {
+        return responseErrorTagName;
+    }
+
+    public void setResponseErrorTagName(String responseErrorTagName) {
+        this.responseErrorTagName = responseErrorTagName;
     }
 }
