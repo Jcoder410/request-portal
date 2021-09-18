@@ -1,5 +1,6 @@
 package com.jcoder.request.execute.api.controller;
 
+import com.jcoder.request.common.BaseController;
 import com.jcoder.request.execute.app.service.IRequestInvokeService;
 import org.dom4j.DocumentException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,7 +16,7 @@ import java.util.Map;
  * @author Qiu
  */
 @Controller
-public class DynamicRequestController {
+public class DynamicRequestController extends BaseController {
 
     @Autowired
     private IRequestInvokeService requestInvokeService;

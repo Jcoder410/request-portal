@@ -1,6 +1,8 @@
 server:
   port: 9080
 spring:
+  application:
+    name: request-execute
   messages:
     encoding: UTF-8
     basename: messages

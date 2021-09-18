@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.jcoder.request.set.infra.mapper.RequestHeaderMapper">
+    <!-- 可根据自己的需求，是否要使用 -->
+    <resultMap id="BaseResultMap" type="com.jcoder.request.set.domain.entity.RequestHeader">
+        <result column="request_header_id" property="requestHeaderId" jdbcType="DECIMAL"/>
+        <result column="request_common_id" property="requestCommonId" jdbcType="DECIMAL"/>
+        <result column="header_name" property="headerName" jdbcType="VARCHAR"/>
+        <result column="header_value" property="headerValue" jdbcType="VARCHAR"/>
+        <result column="over_ride_flag" property="overRideFlag" jdbcType="DECIMAL"/>
+        <result column="object_version_number" property="objectVersionNumber" jdbcType="DECIMAL"/>
+        <result column="creation_date" property="creationDate" jdbcType="DATE"/>
+        <result column="created_by" property="createdBy" jdbcType="DECIMAL"/>
+        <result column="last_updated_by" property="lastUpdatedBy" jdbcType="DECIMAL"/>
+        <result column="last_update_date" property="lastUpdateDate" jdbcType="DATE"/>
+    </resultMap>
+</mapper>

@@ -1,5 +1,6 @@
 package com.jcoder.request.execute.api.controller;
 
+import com.jcoder.request.common.BaseController;
 import com.jcoder.request.execute.app.service.IDefaultInvokeService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -15,7 +16,7 @@ import java.util.Map;
  */
 @RestController
 @RequestMapping("/invoke")
-public class DefaultInvokeController {
+public class DefaultInvokeController extends BaseController {
 
     @Autowired
     private IDefaultInvokeService defaultInvokeService;

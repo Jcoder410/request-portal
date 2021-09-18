@@ -1,5 +1,6 @@
 package com.jcoder.request.execute.api.controller;
 
+import com.jcoder.request.common.BaseController;
 import com.jcoder.request.execute.app.service.IRequestRegistryService;
 import com.jcoder.request.execute.domain.entity.RequestRegistry;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,7 +21,7 @@ import java.util.Locale;
  */
 @RestController
 @RequestMapping("/request")
-public class RequestRegistryController {
+public class RequestRegistryController extends BaseController {
 
     @Autowired
     private IRequestRegistryService requestRegistryService;

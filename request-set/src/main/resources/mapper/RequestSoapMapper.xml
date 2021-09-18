@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.jcoder.request.set.infra.mapper.RequestSoapMapper">
+    <!-- 可根据自己的需求，是否要使用 -->
+    <resultMap id="BaseResultMap" type="com.jcoder.request.set.domain.entity.RequestSoap">
+        <result column="request_soap_id" property="requestSoapId" jdbcType="DECIMAL"/>
+        <result column="request_common_id" property="requestCommonId" jdbcType="DECIMAL"/>
+        <result column="param_template" property="paramTemplate" jdbcType="VARCHAR"/>
+        <result column="param_node_name" property="paramNodeName" jdbcType="VARCHAR"/>
+        <result column="soap_version" property="soapVersion" jdbcType="VARCHAR"/>
+        <result column="soap_action" property="soapAction" jdbcType="VARCHAR"/>
+        <result column="return_data_node" property="returnDataNode" jdbcType="VARCHAR"/>
+        <result column="return_err_node" property="returnErrNode" jdbcType="VARCHAR"/>
+        <result column="list_node_name" property="listNodeName" jdbcType="VARCHAR"/>
+        <result column="object_version_number" property="objectVersionNumber" jdbcType="DECIMAL"/>
+        <result column="creation_date" property="creationDate" jdbcType="DATE"/>
+        <result column="created_by" property="createdBy" jdbcType="DECIMAL"/>
+        <result column="last_updated_by" property="lastUpdatedBy" jdbcType="DECIMAL"/>
+        <result column="last_update_date" property="lastUpdateDate" jdbcType="DATE"/>
+    </resultMap>
+</mapper>

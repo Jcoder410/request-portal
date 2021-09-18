@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.jcoder.request.set.infra.mapper.RequestCommonMapper">
+    <!-- 可根据自己的需求，是否要使用 -->
+    <resultMap id="BaseResultMap" type="com.jcoder.request.set.domain.entity.RequestCommon">
+        <result column="request_common_id" property="requestCommonId" jdbcType="DECIMAL"/>
+        <result column="request_code" property="requestCode" jdbcType="VARCHAR"/>
+        <result column="request_name" property="requestName" jdbcType="VARCHAR"/>
+        <result column="request_desc" property="requestDesc" jdbcType="VARCHAR"/>
+        <result column="source_methond_code" property="sourceMethondCode" jdbcType="VARCHAR"/>
+        <result column="source_type_code" property="sourceTypeCode" jdbcType="VARCHAR"/>
+        <result column="source_request_url" property="sourceRequestUrl" jdbcType="VARCHAR"/>
+        <result column="invoke_type_code" property="invokeTypeCode" jdbcType="VARCHAR"/>
+        <result column="invoke_url" property="invokeUrl" jdbcType="VARCHAR"/>
+        <result column="invoke_url_type" property="invokeUrlType" jdbcType="VARCHAR"/>
+        <result column="return_list_flag" property="returnListFlag" jdbcType="DECIMAL"/>
+        <result column="object_version_number" property="objectVersionNumber" jdbcType="DECIMAL"/>
+        <result column="creation_date" property="creationDate" jdbcType="DATE"/>
+        <result column="created_by" property="createdBy" jdbcType="DECIMAL"/>
+        <result column="last_updated_by" property="lastUpdatedBy" jdbcType="DECIMAL"/>
+        <result column="last_update_date" property="lastUpdateDate" jdbcType="DATE"/>
+    </resultMap>
+</mapper>
