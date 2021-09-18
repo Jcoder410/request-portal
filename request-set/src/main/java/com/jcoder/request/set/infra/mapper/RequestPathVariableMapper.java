@@ -1,7 +1,7 @@
 package com.jcoder.request.set.infra.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
-import com.jcoder.request.set.domain.entity.RequestPathvariable;
+import com.jcoder.request.set.domain.entity.RequestPathVariable;
 import org.apache.ibatis.annotations.Mapper;
 
 /**
@@ -10,5 +10,5 @@ import org.apache.ibatis.annotations.Mapper;
  * @author Qiu
  */
 @Mapper
-public interface RequestPathvariableMapper extends BaseMapper<RequestPathvariable> {
+public interface RequestPathVariableMapper extends BaseMapper<RequestPathVariable> {
 }

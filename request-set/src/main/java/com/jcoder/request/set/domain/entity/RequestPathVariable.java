@@ -18,7 +18,7 @@ import javax.validation.constraints.NotNull;
  */
 @JsonInclude(value = JsonInclude.Include.NON_NULL)
 @TableName(value = "reqp_request_pathvariable")
-public class RequestPathvariable extends BaseEntity {
+public class RequestPathVariable extends BaseEntity {
 
     public static final String FIELD_PATH_VARIABLE_ID = "pathVariableId";
     public static final String FIELD_REQUEST_COMMON_ID = "requestCommonId";

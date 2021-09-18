@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
-<mapper namespace="com.jcoder.request.set.infra.mapper.RequestPathvariableMapper">
+<mapper namespace="com.jcoder.request.set.infra.mapper.RequestPathVariableMapper">
     <!-- 可根据自己的需求，是否要使用 -->
-    <resultMap id="BaseResultMap" type="com.jcoder.request.set.domain.entity.RequestPathvariable">
+    <resultMap id="BaseResultMap" type="com.jcoder.request.set.domain.entity.RequestPathVariable">
         <result column="path_variable_id" property="pathVariableId" jdbcType="DECIMAL"/>
         <result column="request_common_id" property="requestCommonId" jdbcType="DECIMAL"/>
         <result column="param_name" property="paramName" jdbcType="VARCHAR"/>

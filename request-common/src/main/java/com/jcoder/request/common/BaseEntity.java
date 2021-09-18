@@ -1,6 +1,7 @@
 package com.jcoder.request.common;
 
 import com.baomidou.mybatisplus.annotation.TableField;
+import com.baomidou.mybatisplus.annotation.Version;
 
 import java.util.Date;
 
@@ -28,7 +29,7 @@ public class BaseEntity {
     @TableField
     private Long lastUpdatedBy;
 
-    @TableField
+    @Version
     private Long objectVersionNumber;
 
     public Date getCreationDate() {
