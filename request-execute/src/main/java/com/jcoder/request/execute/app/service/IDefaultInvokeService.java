@@ -25,6 +25,6 @@ public interface IDefaultInvokeService {
     ResponseEntity executeInvoke(Map<String, Object> requestParams,
                                  Object requestBody,
                                  String pathVariableStr,
-                                 Map<String, Object> headerParams);
+                                 Map<String, String> headerParams);
 
 }

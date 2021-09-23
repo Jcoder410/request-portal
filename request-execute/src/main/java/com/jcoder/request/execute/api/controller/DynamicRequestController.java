@@ -1,7 +1,8 @@
 package com.jcoder.request.execute.api.controller;
 
 import com.jcoder.request.common.BaseController;
-import com.jcoder.request.execute.app.service.IRequestInvokeService;
+import com.jcoder.request.execute.app.service.impl.RestExecutorServiceImpl;
+import com.jcoder.request.execute.domain.entity.RestParameter;
 import org.dom4j.DocumentException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -19,7 +20,7 @@ import java.util.Map;
 public class DynamicRequestController extends BaseController {
 
     @Autowired
-    private IRequestInvokeService requestInvokeService;
+    private RestExecutorServiceImpl restExecutorService;
 
     /**
      * 通用的请求处理方法
@@ -34,14 +35,17 @@ public class DynamicRequestController extends BaseController {
     public ResponseEntity<?> commonMethod(@RequestParam(required = false) Map<String, Object> requestParams,
                                           @RequestBody(required = false) Object requestBody,
                                           @PathVariable(required = false) Map<String, Object> pathParams,
-                                          @RequestHeader(required = false) Map<String, Object> requestHeader) throws DocumentException {
+                                          @RequestHeader(required = false) Map<String, String> requestHeader) throws DocumentException {
 
-        ResponseEntity responseEntity = requestInvokeService.restInvoke(requestParams,
-                requestBody,
-                pathParams,
-                requestHeader);
+        RestParameter restParameter = new RestParameter();
+        restParameter.setHeaderParams(requestHeader);
+        restParameter.setPathParams(pathParams);
+        restParameter.setRequestBody(requestBody);
+        restParameter.setRequestParams(requestParams);
 
-        return responseEntity;
+        ResponseEntity response = restExecutorService.execute(restParameter);
+
+        return response;
     }
 
 }

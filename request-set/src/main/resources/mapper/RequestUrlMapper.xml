@@ -14,4 +14,13 @@
         <result column="last_updated_by" property="lastUpdatedBy" jdbcType="DECIMAL"/>
         <result column="last_update_date" property="lastUpdateDate" jdbcType="DATE"/>
     </resultMap>
+
+    <select id="checkUrlExisted">
+        select count(request_url_id)
+          from reqp_request_url ru
+         where ru.request_method = #{requestMethod, jdbcType=VARCHAR}
+           and ru.match_string = #{requestUrl, jdbcType=VARCHAR}
+           and ru.request_common_id != #{requestCommonId, jdbcType=DECIMAL}
+    </select>
+
 </mapper>

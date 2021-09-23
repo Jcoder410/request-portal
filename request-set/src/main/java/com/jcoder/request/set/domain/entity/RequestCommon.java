@@ -30,6 +30,7 @@ public class RequestCommon extends BaseEntity {
     public static final String FIELD_INVOKE_URL = "invokeUrl";
     public static final String FIELD_INVOKE_URL_TYPE = "invokeUrlType";
     public static final String FIELD_RETURN_LIST_FLAG = "returnListFlag";
+    public static final String FIELD_STATUS_CODE = "statusCode";
 
 
     @TableId(type = IdType.AUTO)
@@ -73,6 +74,10 @@ public class RequestCommon extends BaseEntity {
     @NotNull
     @TableField
     private Integer returnListFlag;
+
+    @NotNull
+    @TableField
+    private String statusCode;
 
     /**
      * @return 表ID，主键
@@ -193,5 +198,13 @@ public class RequestCommon extends BaseEntity {
 
     public void setReturnListFlag(Integer returnListFlag) {
         this.returnListFlag = returnListFlag;
+    }
+
+    public String getStatusCode() {
+        return statusCode;
+    }
+
+    public void setStatusCode(String statusCode) {
+        this.statusCode = statusCode;
     }
 }

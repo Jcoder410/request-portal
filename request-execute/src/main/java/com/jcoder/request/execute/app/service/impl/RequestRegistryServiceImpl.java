@@ -19,6 +19,8 @@ import java.lang.reflect.Method;
 import java.util.Map;
 
 /**
+ * 请求地址注册
+ *
  * @author Qiu
  */
 @Service

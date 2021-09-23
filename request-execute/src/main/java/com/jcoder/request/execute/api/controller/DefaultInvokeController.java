@@ -26,7 +26,7 @@ public class DefaultInvokeController extends BaseController {
             method = {RequestMethod.GET, RequestMethod.POST, RequestMethod.DELETE, RequestMethod.PUT, RequestMethod.PATCH})
     public ResponseEntity<?> getInvoke(@RequestParam Map<String, Object> requestParams,
                                        @RequestBody(required = false) Object requestBody,
-                                       @RequestHeader(required = false) Map<String, Object> requestHeader,
+                                       @RequestHeader(required = false) Map<String, String> requestHeader,
                                        HttpServletRequest request) {
 
         System.out.println(request.getRequestURI());

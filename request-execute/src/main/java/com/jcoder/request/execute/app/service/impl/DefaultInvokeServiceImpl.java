@@ -5,9 +5,8 @@ import com.jcoder.request.common.exception.CommonException;
 import com.jcoder.request.common.util.CommonConstants;
 import com.jcoder.request.execute.app.service.IDefaultInvokeService;
 import com.jcoder.request.execute.app.service.IRequestInfoService;
-import com.jcoder.request.execute.app.service.IRequestInvokeService;
+import com.jcoder.request.execute.domain.entity.RestParameter;
 import com.jcoder.request.execute.infra.ExecuteConstants;
-import org.apache.cxf.common.util.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -23,7 +22,7 @@ import java.util.Map;
 public class DefaultInvokeServiceImpl implements IDefaultInvokeService {
 
     @Autowired
-    private IRequestInvokeService requestInvokeService;
+    private RestExecutorServiceImpl restExecutorService;
 
     @Autowired
     private IRequestInfoService requestInfoService;
@@ -32,7 +31,7 @@ public class DefaultInvokeServiceImpl implements IDefaultInvokeService {
     public ResponseEntity executeInvoke(Map<String, Object> requestParams,
                                         Object requestBody,
                                         String pathVariableStr,
-                                        Map<String, Object> headerParams) {
+                                        Map<String, String> headerParams) {
 
         String interfaceCode;
         if (requestParams.containsKey(ExecuteConstants.UniqueFieldName.REQUEST_UNIQUE)) {
@@ -46,21 +45,20 @@ public class DefaultInvokeServiceImpl implements IDefaultInvokeService {
          */
         RequestCacheEntity requestCacheEntity = requestInfoService.getRequestInfo(interfaceCode);
         List<String> pathVariableList = requestCacheEntity.getPathVariableList();
-
-        /**
-         * 提取pathVariable
-         */
         Map<String, Object> pathParams = extractPathParams(pathVariableStr, pathVariableList);
+
+        RestParameter restParameter = new RestParameter();
+        restParameter.setHeaderParams(headerParams);
+        restParameter.setPathParams(pathParams);
+        restParameter.setRequestBody(requestBody);
+        restParameter.setRequestParams(requestParams);
 
         /**
          * 执行请求
          */
-        ResponseEntity responseEntity = requestInvokeService.restInvoke(requestParams,
-                requestBody,
-                pathParams,
-                headerParams);
+        ResponseEntity response = restExecutorService.execute(restParameter);
 
-        return responseEntity;
+        return response;
     }
 
     /**
@@ -78,7 +76,7 @@ public class DefaultInvokeServiceImpl implements IDefaultInvokeService {
         Map<String, Object> pathParamMap = new HashMap<>();
 
         String defaultUrl = "/invoke/default/";
-        if(pathVariableStr.length() > defaultUrl.length()){
+        if (pathVariableStr.length() > defaultUrl.length()) {
 
             pathVariableStr = pathVariableStr.replace(defaultUrl, "");
             String[] pathVariables = pathVariableStr.split(CommonConstants.SpecialSymbol.FORWARD_SLASH);

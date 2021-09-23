@@ -1,11 +1,13 @@
 package com.jcoder.request.execute.infra.util;
 
+import com.jcoder.request.common.util.CommonConstants;
 import com.jcoder.request.execute.infra.ExecuteConstants;
 import org.apache.commons.lang3.StringUtils;
 import org.dom4j.Document;
 import org.dom4j.DocumentException;
 import org.dom4j.DocumentHelper;
 import org.dom4j.Element;
+import org.springframework.stereotype.Component;
 
 import java.util.*;
 
@@ -62,6 +64,30 @@ public class HttpMessageUtil {
         for (Element child : element.elements()) {
             addElement(child, elementList, paramNodeName);
         }
+    }
+
+    /**
+     * 基于模板添加xml节点, 并返回完整的xml字符串
+     *
+     * @param paramList     xml数据节点字符串
+     * @param paramTemplate 模板
+     * @param paramNodeName 需要添加参数的节点名称
+     * @return
+     */
+    public String buildSoapRequestBody(List<String> paramList,
+                                       String paramTemplate,
+                                       String paramNodeName) throws DocumentException {
+
+        List<Element> elements = new ArrayList<>();
+        for (String paramStr : paramList) {
+            Element element = DocumentHelper.parseText(paramStr).getRootElement();
+            elements.add(element);
+        }
+
+        Document paramDoc = DocumentHelper.parseText(paramTemplate);
+        addElement(paramDoc.getRootElement(), elements, paramNodeName);
+
+        return paramDoc.asXML();
     }
 
     /**
@@ -158,7 +184,7 @@ public class HttpMessageUtil {
     public List<String> getDataFromRestResponse(Object dataObject,
                                                 String dataNodeName) {
 
-        if(null == dataObject){
+        if (null == dataObject) {
             return new ArrayList<>();
         }
 
@@ -181,9 +207,10 @@ public class HttpMessageUtil {
 
     /**
      * 提取soap接口返回的报文, 并转换成xml字符串
-     * @param xmlStr xml格式的字符串
+     *
+     * @param xmlStr       xml格式的字符串
      * @param dataNodeName 需要提取的节点名称
-     * @param type 提取类型:NODE或CONTENT
+     * @param type         提取类型:NODE或CONTENT
      * @return
      */
     public List<String> getDataFromSoapResponse(String xmlStr,
@@ -202,14 +229,44 @@ public class HttpMessageUtil {
             List<Element> elementList = getDataElement(Arrays.asList(document.getRootElement()), dataNodeName);
 
             for (Element data : elementList) {
-                if(type.equals(ExecuteConstants.ExtractType.XML_NODE)){
+                if (type.equals(ExecuteConstants.ExtractType.XML_NODE)) {
                     dataList.add(data.asXML());
-                }else{
+                } else {
                     dataList.add(data.asXML());
                 }
             }
         }
         return dataList;
+    }
+
+    /**
+     * 用于处理请求地址后存在参数的情况, 比如http://localhost/xxx?aaa=1234
+     *
+     * @param baseUrl
+     * @param requestParams
+     * @return
+     */
+    public String buildUrl(String baseUrl, Map<String, Object> requestParams) {
+
+        StringBuilder paramsStr = new StringBuilder(baseUrl);
+        Boolean hasParam = Boolean.FALSE;
+        paramsStr.append(CommonConstants.SpecialSymbol.QUESTION_MARK);
+
+        if (requestParams != null) {
+            for (String paramName : requestParams.keySet()) {
+
+                if (hasParam) {
+                    paramsStr.append(CommonConstants.SpecialSymbol.AT);
+                }
+                paramsStr.append(paramName)
+                        .append(CommonConstants.SpecialSymbol.EQUAL)
+                        .append(CommonConstants.SpecialSymbol.OPENING_BRACE)
+                        .append(paramName)
+                        .append(CommonConstants.SpecialSymbol.CLOSING_BRACE);
+                hasParam = Boolean.TRUE;
+            }
+        }
+        return paramsStr.toString();
     }
 
 }

@@ -14,10 +14,18 @@
         <result column="invoke_url" property="invokeUrl" jdbcType="VARCHAR"/>
         <result column="invoke_url_type" property="invokeUrlType" jdbcType="VARCHAR"/>
         <result column="return_list_flag" property="returnListFlag" jdbcType="DECIMAL"/>
+        <result column="status_code" property="statusCode" jdbcType="DECIMAL"/>
         <result column="object_version_number" property="objectVersionNumber" jdbcType="DECIMAL"/>
         <result column="creation_date" property="creationDate" jdbcType="DATE"/>
         <result column="created_by" property="createdBy" jdbcType="DECIMAL"/>
         <result column="last_updated_by" property="lastUpdatedBy" jdbcType="DECIMAL"/>
         <result column="last_update_date" property="lastUpdateDate" jdbcType="DATE"/>
     </resultMap>
+
+    <select id="checkCodeExisted">
+        select count(1)
+          from reqp_request_common rc
+         where request_code = #{requestCode, jdbcType = requestCode}
+    </select>
+
 </mapper>

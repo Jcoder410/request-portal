@@ -32,6 +32,6 @@ public interface IRequestInvokeService {
     ResponseEntity<Object> restInvoke(Map<String, Object> requestParams,
                                       Object requestBody,
                                       Map<String, Object> pathParams,
-                                      Map<String, Object> requestHeader);
+                                      Map<String, String> requestHeader);
 
 }

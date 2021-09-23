@@ -1,9 +1,7 @@
 package com.jcoder.request.execute.app.service;
 
-import com.jcoder.request.execute.domain.entity.SoapReturnEntity;
+import com.jcoder.request.execute.domain.entity.HttpParameter;
 import org.springframework.http.ResponseEntity;
-
-import java.util.Map;
 
 /**
  * 对实际接口发起请求
@@ -13,37 +11,11 @@ import java.util.Map;
 public interface IExecuteRequestService {
 
     /**
-     * 用于执行rest请求
+     * 执行http请求
      *
-     * @param url
-     * @param requestMethod
-     * @param requestParams
-     * @param requestBody
-     * @param pathParams
-     * @param headerParams
+     * @param httpParameter
      * @return
      */
-    ResponseEntity<Object> executeRestRequest(String url,
-                                              String requestMethod,
-                                              Map<String, Object> requestParams,
-                                              Object requestBody,
-                                              Map<String, Object> pathParams,
-                                              Map<String, Object> headerParams);
-
-    /**
-     * 用于执行soap请求
-     *
-     * @param url
-     * @param params
-     * @param soapAction
-     * @param soapVersion
-     * @param httpHeader
-     * @return
-     */
-    SoapReturnEntity executeSoapRequest(String url,
-                                        String params,
-                                        String soapAction,
-                                        String soapVersion,
-                                        Map<String, String> httpHeader);
+    ResponseEntity<Object> executeRequest(HttpParameter httpParameter);
 
 }
