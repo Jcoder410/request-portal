@@ -1,6 +1,6 @@
 package com.jcoder.request.execute.app.service.impl;
 
-import com.jcoder.request.common.RequestCacheEntity;
+import com.jcoder.request.common.SetCacheEntity;
 import com.jcoder.request.common.exception.CommonException;
 import com.jcoder.request.execute.app.service.IExecuteRequestService;
 import com.jcoder.request.execute.app.service.IExecutorService;
@@ -43,21 +43,28 @@ public class RestExecutorServiceImpl implements IExecutorService<ResponseEntity,
             throw new CommonException("request.execute.request_code_null", ExecuteConstants.UniqueFieldName.REQUEST_UNIQUE);
         }
 
-        //获取接口注册信息
-        RequestCacheEntity requestCacheEntity = requestInfoService.getRequestInfo(requestCode);
-
+        /**
+         * todo: 获取接口注册信息
+         */
+        SetCacheEntity setCacheEntity = new SetCacheEntity();
         HttpParameter httpParameter = new HttpParameter();
-        httpParameter.setUrl(requestCacheEntity.getTargetRequestUrl());
-        httpParameter.setMethodCode(requestCacheEntity.getTargetRequestMethod());
-        httpParameter.mergeUriVariables(restParameter.getPathParams(), restParameter.getRequestParams());
+        httpParameter.setUrl(setCacheEntity.getSourceRequestUrl());
+        httpParameter.setMethodCode(setCacheEntity.getSourceMethodCode());
+
+        httpParameter.setHeaderParams(restParameter.getHeaderParams())
+                .setPathVariables(restParameter.getPathParams())
+                .setRequestParams(restParameter.getRequestParams())
+                .mergeDefaultHeaderParam(setCacheEntity.getHeaderDefaultValues())
+                .mergeDefaultPathParam(setCacheEntity.getPathDefaultValues())
+                .mergeDefaultRequestParam(setCacheEntity.getRequestDefaultValues())
+                .buildUriVariables();
 
         /**
          * 如果目标接口的接口类型是soap,则需要将map报文转换成xml格式,
          * 并配合设置的参数模板, 拼接出完整的soap请求报文格式
          */
-        if (ExecuteConstants.RequestType.SOAP.equals(requestCacheEntity.getTargetRequestType())) {
-
-            String soapBody = buildRequestBody(requestCacheEntity, restParameter.getRequestBody());
+        if (ExecuteConstants.RequestType.SOAP.equals(setCacheEntity.getSourceTypeCode())) {
+            String soapBody = buildRequestBody(setCacheEntity, restParameter.getRequestBody());
             httpParameter.setRequestBody(soapBody);
             httpParameter.setReturnType(String.class);
         } else {
@@ -72,7 +79,7 @@ public class RestExecutorServiceImpl implements IExecutorService<ResponseEntity,
         /**
          * 返回报文处理
          */
-        return buildReturn(restResponse, requestCacheEntity);
+        return buildReturn(restResponse, setCacheEntity);
     }
 
     /**
@@ -82,8 +89,8 @@ public class RestExecutorServiceImpl implements IExecutorService<ResponseEntity,
      * @param cacheEntity
      * @return
      */
-    private ResponseEntity buildReturn(ResponseEntity response, RequestCacheEntity cacheEntity) {
-        if (ExecuteConstants.RequestType.SOAP.equals(cacheEntity.getTargetRequestType())) {
+    private ResponseEntity buildReturn(ResponseEntity response, SetCacheEntity cacheEntity) {
+        if (ExecuteConstants.RequestType.SOAP.equals(cacheEntity.getSourceTypeCode())) {
 
             String xmlData = (String) response.getBody();
             if (StringUtils.isEmpty(xmlData)) {
@@ -93,12 +100,12 @@ public class RestExecutorServiceImpl implements IExecutorService<ResponseEntity,
             //解析获得数据
             List<Object> responseData;
             try {
-                responseData = httpMessageUtil.extractDataFromXml(xmlData, cacheEntity.getResponseTagName());
+                responseData = httpMessageUtil.extractDataFromXml(xmlData, cacheEntity.getReturnDataNode());
             } catch (DocumentException e) {
                 throw new CommonException("request.execute.build_xml_err", e);
             }
 
-            if (responseData.size() > 0 && !cacheEntity.getTargetReturnListFlag()) {
+            if (responseData.size() > 0 && !cacheEntity.getReturnListFlag()) {
                 return ResponseEntity.ok(responseData.get(0));
             }
             return ResponseEntity.ok(responseData);
@@ -109,11 +116,11 @@ public class RestExecutorServiceImpl implements IExecutorService<ResponseEntity,
     /**
      * 构建soap请求的请求体
      *
-     * @param requestCacheEntity
+     * @param cacheEntity
      * @param requestBody
      * @return
      */
-    private String buildRequestBody(RequestCacheEntity requestCacheEntity, Object requestBody) {
+    private String buildRequestBody(SetCacheEntity cacheEntity, Object requestBody) {
 
         if (requestBody == null) {
             return "";
@@ -123,9 +130,9 @@ public class RestExecutorServiceImpl implements IExecutorService<ResponseEntity,
          * 构建soap请求参数报文
          */
         try {
-            String soapParam = httpMessageUtil.buildSoapRequestParam(requestCacheEntity.getSoapTemplate(),
-                    requestCacheEntity.getParamNodeName(),
-                    requestCacheEntity.getDataTagName(),
+            String soapParam = httpMessageUtil.buildSoapRequestParam(cacheEntity.getSoapParamTemplate(),
+                    cacheEntity.getSoapParamNodeName(),
+                    cacheEntity.getListNodeName(),
                     requestBody);
             return soapParam;
         } catch (DocumentException e) {

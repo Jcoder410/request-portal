@@ -15,7 +15,7 @@ public class RestParameter extends BaseRequestParam {
 
     private Map<String, Object> pathParams;
 
-    private Map<String, ?> headerParams;
+    private Map<String, String> headerParams;
 
     public Map<String, Object> getRequestParams() {
         return requestParams;
@@ -41,11 +41,11 @@ public class RestParameter extends BaseRequestParam {
         this.pathParams = pathParams;
     }
 
-    public Map<String, ?> getHeaderParams() {
+    public Map<String, String> getHeaderParams() {
         return headerParams;
     }
 
-    public void setHeaderParams(Map<String, ?> headerParams) {
+    public void setHeaderParams(Map<String, String> headerParams) {
         this.headerParams = headerParams;
     }
 }

@@ -27,6 +27,21 @@ public class RequestRegistry {
      */
     private String requestMethod;
 
+    /**
+     * 请求类型: SOAP、REST
+     */
+    private String requestType;
+
+    /**
+     * 返回的数据格式, 对应header里面contentType中的格式
+     */
+    private String[] produces;
+
+    /**
+     * 支持的入参格式, 对应header里面contentType中的格式
+     */
+    private String[] consumes;
+
     public List<String> getPathVariables() {
         return pathVariables;
     }
@@ -66,5 +81,29 @@ public class RequestRegistry {
 
     public void setRequestMethod(String requestMethod) {
         this.requestMethod = requestMethod;
+    }
+
+    public String getRequestType() {
+        return requestType;
+    }
+
+    public void setRequestType(String requestType) {
+        this.requestType = requestType;
+    }
+
+    public String[] getProduces() {
+        return produces;
+    }
+
+    public void setProduces(String[] produces) {
+        this.produces = produces;
+    }
+
+    public String[] getConsumes() {
+        return consumes;
+    }
+
+    public void setConsumes(String[] consumes) {
+        this.consumes = consumes;
     }
 }

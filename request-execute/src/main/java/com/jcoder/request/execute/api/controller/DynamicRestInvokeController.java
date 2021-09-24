@@ -17,7 +17,7 @@ import java.util.Map;
  * @author Qiu
  */
 @Controller
-public class DynamicRequestController extends BaseController {
+public class DynamicRestInvokeController extends BaseController {
 
     @Autowired
     private RestExecutorServiceImpl restExecutorService;

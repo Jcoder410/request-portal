@@ -16,7 +16,7 @@ import java.util.Map;
  */
 @RestController
 @RequestMapping("/invoke")
-public class DefaultInvokeController extends BaseController {
+public class DefaultRestInvokeController extends BaseController {
 
     @Autowired
     private IDefaultInvokeService defaultInvokeService;

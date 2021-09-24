@@ -1,7 +1,8 @@
 package com.jcoder.request.execute.app.service.impl;
 
 import com.jcoder.request.common.exception.CommonException;
-import com.jcoder.request.execute.api.controller.DynamicRequestController;
+import com.jcoder.request.execute.api.controller.DynamicRestInvokeController;
+import com.jcoder.request.execute.api.controller.DynamicSoapInvokeController;
 import com.jcoder.request.execute.app.service.IRequestRegistryService;
 import com.jcoder.request.execute.domain.entity.RequestRegistry;
 import com.jcoder.request.execute.infra.ExecuteConstants;
@@ -40,20 +41,26 @@ public class RequestRegistryServiceImpl implements IRequestRegistryService {
         }
 
         //构建requestMappingInfo对象
-        RequestMappingInfo requestMappingInfo = buildRequestMappingInfo(requestRegistry.getBaseRequestUrl(), method);
+        RequestMappingInfo requestMappingInfo = buildRequestMappingInfo(requestRegistry, method);
         if (urlRegisted(requestMappingInfo)) {
             throw new CommonException("request.registry.request_registered", requestRegistry.getBaseRequestUrl());
         }
-
-        //获取请求处理方法的名称
-        Method targetMethod = ReflectionUtils.findMethod(DynamicRequestController.class, ExecuteConstants.RequestHandleMethod.COMMON_HANDLER, null);
 
         /**
          * 从bean容器获取RequestMappingHandlerMapping对象，
          * 将url与处理方法进行绑定
          */
         RequestMappingHandlerMapping requestMappingHandlerMapping = webApplicationContext.getBean(RequestMappingHandlerMapping.class);
-        requestMappingHandlerMapping.registerMapping(requestMappingInfo, "dynamicRequestController", targetMethod);
+
+        if (requestRegistry.getRequestType().equals(ExecuteConstants.RequestType.REST)) {
+            Method targetMethod = ReflectionUtils.findMethod(DynamicRestInvokeController.class, ExecuteConstants.RequestHandleMethod.COMMON_HANDLER, null);
+            requestMappingHandlerMapping.registerMapping(requestMappingInfo, "dynamicRestInvokeController", targetMethod);
+        } else if (requestRegistry.getRequestType().equals(ExecuteConstants.RequestType.SOAP)) {
+            Method targetMethod = ReflectionUtils.findMethod(DynamicSoapInvokeController.class, ExecuteConstants.RequestHandleMethod.COMMON_HANDLER, null);
+            requestMappingHandlerMapping.registerMapping(requestMappingInfo, "dynamicSoapInvokeController", targetMethod);
+        } else {
+            throw new CommonException("request.registry.request_type_err", requestRegistry.getRequestType());
+        }
     }
 
     @Override
@@ -69,7 +76,7 @@ public class RequestRegistryServiceImpl implements IRequestRegistryService {
         RequestMappingHandlerMapping requestMappingHandlerMapping = webApplicationContext.getBean(RequestMappingHandlerMapping.class);
 
         //构建requestMappingInfo对象
-        RequestMappingInfo requestMappingInfo = buildRequestMappingInfo(requestRegistry.getBaseRequestUrl(), method);
+        RequestMappingInfo requestMappingInfo = buildRequestMappingInfo(requestRegistry, method);
 
         requestMappingHandlerMapping.unregisterMapping(requestMappingInfo);
     }
@@ -77,21 +84,21 @@ public class RequestRegistryServiceImpl implements IRequestRegistryService {
     /**
      * 构建RequestMappingInfo
      *
-     * @param requestUrl
+     * @param requestRegistry
      * @param requestMethod
      * @return
      */
-    private RequestMappingInfo buildRequestMappingInfo(String requestUrl, RequestMethod requestMethod) {
+    private RequestMappingInfo buildRequestMappingInfo(RequestRegistry requestRegistry, RequestMethod requestMethod) {
 
         //构建requestMappingInfo对象
         String[] headers = new String[]{};
         RequestMappingInfo.Builder builder = RequestMappingInfo
-                .paths(requestUrl)
+                .paths(requestRegistry.getBaseRequestUrl())
                 .methods(requestMethod)
                 .params(null)
                 .headers(headers)
-                .consumes(null)
-                .produces("application/json;charset=UTF-8")
+                .consumes(requestRegistry.getConsumes())
+                .produces(requestRegistry.getProduces())
                 .mappingName(null);
         RequestMappingInfo requestMappingInfo = builder.build();
 

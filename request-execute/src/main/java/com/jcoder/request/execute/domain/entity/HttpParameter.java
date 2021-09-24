@@ -1,5 +1,7 @@
 package com.jcoder.request.execute.domain.entity;
 
+import com.jcoder.request.common.ParamSetBaseAttr;
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -24,6 +26,10 @@ public class HttpParameter {
 
     private Class returnType;
 
+    private Map<String, Object> pathVariables;
+
+    private Map<String, Object> requestParams;
+
     public HttpParameter() {
         this.uriVariables = new HashMap<>();
         this.headerParams = new HashMap<>();
@@ -33,20 +39,86 @@ public class HttpParameter {
     }
 
     /**
-     * 合并路径参数
+     * 获取完整的路径参数: 即合并pathVariables和requestParameter
      *
-     * @param params
+     * @return
      */
-    public void mergeUriVariables(Map<String, Object>... params) {
+    public void buildUriVariables() {
 
-        if (params != null) {
-            for (Map param : params) {
-                if (param == null) {
-                    continue;
+        this.uriVariables.putAll(this.requestParams);
+        this.uriVariables.putAll(this.pathVariables);
+    }
+
+    /**
+     * 构建完整的路径参数
+     *
+     * @param defaultSetMap
+     * @return
+     */
+    public HttpParameter mergeDefaultPathParam(Map<String, ParamSetBaseAttr> defaultSetMap) {
+        merge(defaultSetMap, this.pathVariables);
+        return this;
+    }
+
+    /**
+     * 构建完整的请求参数
+     *
+     * @param defaultSetMap
+     * @return
+     */
+    public HttpParameter mergeDefaultRequestParam(Map<String, ParamSetBaseAttr> defaultSetMap) {
+        merge(defaultSetMap, this.requestParams);
+        return this;
+    }
+
+    /**
+     * 合并
+     *
+     * @param defaultSetMap
+     * @param inboundParams
+     */
+    private void merge(Map<String, ParamSetBaseAttr> defaultSetMap,
+                       Map<String, Object> inboundParams) {
+        for (String param : defaultSetMap.keySet()) {
+            ParamSetBaseAttr paramSetBaseAttr = defaultSetMap.get(param);
+            if (inboundParams.containsKey(param)) {
+                if (!paramSetBaseAttr.getOverrideFlag()) {
+                    inboundParams.put(param, paramSetBaseAttr.getParamValue());
                 }
-                this.uriVariables.putAll(param);
+            } else {
+                inboundParams.put(param, paramSetBaseAttr.getParamValue());
             }
         }
+    }
+
+    /**
+     * 构建完整的请求头参数
+     *
+     * @param defaultSetMap
+     * @return
+     */
+    public HttpParameter mergeDefaultHeaderParam(Map<String, ParamSetBaseAttr> defaultSetMap) {
+
+        /**
+         * 移除掉多余的传入参数
+         */
+        for (String paramName : this.headerParams.keySet()) {
+            if (!defaultSetMap.containsKey(paramName)) {
+                this.headerParams.remove(paramName);
+            }
+        }
+
+        for (String param : defaultSetMap.keySet()) {
+            ParamSetBaseAttr paramSetBaseAttr = defaultSetMap.get(param);
+            if (this.headerParams.containsKey(param)) {
+                if (!paramSetBaseAttr.getOverrideFlag()) {
+                    this.headerParams.put(param, paramSetBaseAttr.getParamValue());
+                }
+            } else {
+                this.headerParams.put(param, paramSetBaseAttr.getParamValue());
+            }
+        }
+        return this;
     }
 
     public String getUrl() {
@@ -101,8 +173,9 @@ public class HttpParameter {
         return headerParams;
     }
 
-    public void setHeaderParams(Map<String, String> headerParams) {
+    public HttpParameter setHeaderParams(Map<String, String> headerParams) {
         this.headerParams = headerParams;
+        return this;
     }
 
     public Class getReturnType() {
@@ -111,5 +184,23 @@ public class HttpParameter {
 
     public void setReturnType(Class returnType) {
         this.returnType = returnType;
+    }
+
+    public Map<String, Object> getPathVariables() {
+        return pathVariables;
+    }
+
+    public HttpParameter setPathVariables(Map<String, Object> pathVariables) {
+        this.pathVariables = pathVariables;
+        return this;
+    }
+
+    public Map<String, Object> getRequestParams() {
+        return requestParams;
+    }
+
+    public HttpParameter setRequestParams(Map<String, Object> requestParams) {
+        this.requestParams = requestParams;
+        return this;
     }
 }

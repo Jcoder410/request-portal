@@ -1,6 +1,6 @@
 package com.jcoder.request.execute.app.service.impl;
 
-import com.jcoder.request.common.RequestCacheEntity;
+import com.jcoder.request.common.SetCacheEntity;
 import com.jcoder.request.common.exception.CommonException;
 import com.jcoder.request.common.util.CommonConstants;
 import com.jcoder.request.execute.app.service.IDefaultInvokeService;
@@ -12,7 +12,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -41,11 +40,10 @@ public class DefaultInvokeServiceImpl implements IDefaultInvokeService {
         }
 
         /**
-         * 获取接口缓存信息
+         * todo: 获取接口缓存信息
          */
-        RequestCacheEntity requestCacheEntity = requestInfoService.getRequestInfo(interfaceCode);
-        List<String> pathVariableList = requestCacheEntity.getPathVariableList();
-        Map<String, Object> pathParams = extractPathParams(pathVariableStr, pathVariableList);
+        SetCacheEntity setCacheEntity = new SetCacheEntity();
+        Map<String, Object> pathParams = extractPathParams(pathVariableStr, setCacheEntity.getPathVariables());
 
         RestParameter restParameter = new RestParameter();
         restParameter.setHeaderParams(headerParams);
@@ -68,7 +66,7 @@ public class DefaultInvokeServiceImpl implements IDefaultInvokeService {
      * @param pathVariableList
      * @return
      */
-    private Map<String, Object> extractPathParams(String pathVariableStr, List<String> pathVariableList) {
+    private Map<String, Object> extractPathParams(String pathVariableStr, Map<Integer, String> pathVariableList) {
 
         /**
          * 获取pathVariable部分, 除开默认路径，其他的一律认为是路径参数部分
