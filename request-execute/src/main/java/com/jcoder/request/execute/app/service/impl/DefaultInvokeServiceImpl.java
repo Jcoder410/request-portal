@@ -4,9 +4,10 @@ import com.jcoder.request.common.SetCacheEntity;
 import com.jcoder.request.common.exception.CommonException;
 import com.jcoder.request.common.util.CommonConstants;
 import com.jcoder.request.execute.app.service.IDefaultInvokeService;
-import com.jcoder.request.execute.app.service.IRequestInfoService;
+import com.jcoder.request.execute.app.service.ISetCacheService;
 import com.jcoder.request.execute.domain.entity.RestParameter;
 import com.jcoder.request.execute.infra.ExecuteConstants;
+import com.jcoder.request.execute.infra.executor.RestExecutorServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -24,7 +25,7 @@ public class DefaultInvokeServiceImpl implements IDefaultInvokeService {
     private RestExecutorServiceImpl restExecutorService;
 
     @Autowired
-    private IRequestInfoService requestInfoService;
+    private ISetCacheService setCacheService;
 
     @Override
     public ResponseEntity executeInvoke(Map<String, Object> requestParams,
@@ -40,9 +41,9 @@ public class DefaultInvokeServiceImpl implements IDefaultInvokeService {
         }
 
         /**
-         * todo: 获取接口缓存信息
+         * 获取接口缓存信息
          */
-        SetCacheEntity setCacheEntity = new SetCacheEntity();
+        SetCacheEntity setCacheEntity = setCacheService.getCacheInfo(interfaceCode);
         Map<String, Object> pathParams = extractPathParams(pathVariableStr, setCacheEntity.getPathVariables());
 
         RestParameter restParameter = new RestParameter();

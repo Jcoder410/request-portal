@@ -232,6 +232,9 @@ public class HttpMessageUtil {
                 if (type.equals(ExecuteConstants.ExtractType.XML_NODE)) {
                     dataList.add(data.asXML());
                 } else {
+                    /**
+                     * todo: 对于提取内容部分，需要做额外的处理
+                     */
                     dataList.add(data.asXML());
                 }
             }

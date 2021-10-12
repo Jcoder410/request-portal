@@ -102,11 +102,13 @@ public class HttpParameter {
         /**
          * 移除掉多余的传入参数
          */
+        Map<String,String> cleanMap = new HashMap<>();
         for (String paramName : this.headerParams.keySet()) {
-            if (!defaultSetMap.containsKey(paramName)) {
-                this.headerParams.remove(paramName);
+            if (defaultSetMap.containsKey(paramName)) {
+                cleanMap.put(paramName,this.headerParams.get(paramName));
             }
         }
+        this.headerParams = cleanMap;
 
         for (String param : defaultSetMap.keySet()) {
             ParamSetBaseAttr paramSetBaseAttr = defaultSetMap.get(param);
@@ -141,8 +143,9 @@ public class HttpParameter {
         return requestBody;
     }
 
-    public void setRequestBody(Object requestBody) {
+    public HttpParameter setRequestBody(Object requestBody) {
         this.requestBody = requestBody;
+        return this;
     }
 
     public Map<String, Object> getUriVariables() {
@@ -182,8 +185,9 @@ public class HttpParameter {
         return returnType;
     }
 
-    public void setReturnType(Class returnType) {
+    public HttpParameter setReturnType(Class returnType) {
         this.returnType = returnType;
+        return this;
     }
 
     public Map<String, Object> getPathVariables() {

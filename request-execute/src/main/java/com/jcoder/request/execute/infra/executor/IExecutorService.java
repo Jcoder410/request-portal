@@ -1,4 +1,4 @@
-package com.jcoder.request.execute.app.service;
+package com.jcoder.request.execute.infra.executor;
 
 /**
  * 透传执行抽象接口

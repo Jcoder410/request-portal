@@ -8,7 +8,7 @@ import org.springframework.http.ResponseEntity;
  *
  * @author Qiu
  */
-public interface IExecuteRequestService {
+public interface IHttpExecuteService {
 
     /**
      * 执行http请求

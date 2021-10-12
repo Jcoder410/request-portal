@@ -1,6 +1,6 @@
 package com.jcoder.request.execute.app.service.impl;
 
-import com.jcoder.request.execute.app.service.IExecuteRequestService;
+import com.jcoder.request.execute.app.service.IHttpExecuteService;
 import com.jcoder.request.execute.domain.entity.HttpParameter;
 import com.jcoder.request.execute.infra.util.RequestToolUtil;
 import org.springframework.http.*;
@@ -14,7 +14,7 @@ import java.util.Map;
  * @author Qiu
  */
 @Service
-public class ExecuteRequestServiceImpl implements IExecuteRequestService {
+public class HttpExecuteServiceImpl implements IHttpExecuteService {
 
     @Override
     public ResponseEntity<Object> executeRequest(HttpParameter httpParameter) {

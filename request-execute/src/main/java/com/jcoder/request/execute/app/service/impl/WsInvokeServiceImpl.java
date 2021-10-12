@@ -1,9 +1,9 @@
 package com.jcoder.request.execute.app.service.impl;
 
-import com.jcoder.request.execute.app.service.ISoapInvokeService;
 import com.jcoder.request.execute.app.service.IWsInvokeService;
 import com.jcoder.request.execute.domain.entity.SoapRequestParam;
 import com.jcoder.request.execute.domain.entity.SoapResponse;
+import com.jcoder.request.execute.infra.executor.SoapExecutorServiceImpl;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -23,13 +23,13 @@ import java.util.ArrayList;
 public class WsInvokeServiceImpl implements IWsInvokeService {
 
     @Autowired
-    private ISoapInvokeService soapInvokeService;
+    private SoapExecutorServiceImpl soapExecutorService;
 
     @Override
     public SoapResponse invoke(SoapRequestParam params) {
 
         try {
-            SoapResponse response = soapInvokeService.soapInvoke(params);
+            SoapResponse response = soapExecutorService.execute(params);
             return response;
         } catch (Exception e) {
             e.printStackTrace();
