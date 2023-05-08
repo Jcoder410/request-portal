@@ -1,2 +1,11 @@
-# request-portal
-用于rest和soap接口的转发/透传
+## 目标
+* 代理rest接口<br/>
+* 代理soap接口<br/>
+* 将rest接口代理成soap接口<br/>
+* 将soap接口代理成soap接口<br/>
+* 支持自定义接口地址<br/>
+* 可以跟代理后的接口地址保持一致<br/>
+## 待定
+* 代理springbean，将bean方法直接透传成rest接口
+* 返回数据修改支持
+* 返回数据脱密支持
